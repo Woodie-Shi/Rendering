@@ -1,0 +1,3 @@
+[submodule "Moer-lite"]
+	path = Moer-lite
+	url = https://github.com/NJUCG/Moer-lite.git
