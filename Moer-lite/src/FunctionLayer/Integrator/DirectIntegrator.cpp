@@ -2,7 +2,7 @@
 #include <FunctionLayer/Material/Matte.h>
 
 Spectrum
-DirectIntegratorSampleLight::li(const Ray &ray, const Scene &scene,
+DirectIntegratorSampleLight::li(Ray &ray, const Scene &scene,
                                 std::shared_ptr<Sampler> sampler) const {
   Spectrum spectrum(.0f);
   auto intersectionOpt = scene.rayIntersect(ray);
@@ -61,7 +61,7 @@ DirectIntegratorSampleLight::li(const Ray &ray, const Scene &scene,
 REGISTER_CLASS(DirectIntegratorSampleLight, "directSampleLight")
 
 Spectrum
-DirectIntegratorSampleBSDF ::li(const Ray &ray, const Scene &scene,
+DirectIntegratorSampleBSDF ::li(Ray &ray, const Scene &scene,
                                 std::shared_ptr<Sampler> sampler) const {
   Spectrum spectrum(.0f);
   auto intersectionOpt = scene.rayIntersect(ray);
@@ -73,6 +73,7 @@ DirectIntegratorSampleBSDF ::li(const Ray &ray, const Scene &scene,
   }
 
   auto intersection = intersectionOpt.value();
+
   if (auto light = intersection.shape->light; light) {
     spectrum += light->evaluateEmission(intersection, -ray.direction);
   }
@@ -81,9 +82,6 @@ DirectIntegratorSampleBSDF ::li(const Ray &ray, const Scene &scene,
   auto material = intersection.shape->material;
   auto bsdf = material->computeBSDF(intersection);
   auto bsdfSampleResult = bsdf->sample(-ray.direction, sampler->next2D());
-
-  Vector3f n = bsdf->normal;
-  Vector3f wh = normalize(-ray.direction + bsdfSampleResult.wi);
 
   //* 该入射方向上如果有光源，那么将得到一条有贡献的、长度为1的光路
   Ray shadowRay{intersection.position, bsdfSampleResult.wi};
